@@ -1,93 +1,86 @@
 {
-    Shogi.kn v0.01 (for Kuin 0.023):
-        Last Modified: 2013/04/29 12:13:23.
+    Shogi.kn v1.00 (for Kuin 1.00):
+        Last Modified: 2013/09/29 23:59:26.
         Created by @tatt61880
             https://twitter.com/tatt61880
             https://github.com/tatt61880
 }
+const grid_width: float :: 70.0
+const grid_height: float :: 80.0
+const width_offset: float :: 480.0
+const height_offset: float :: 90.0
+const my_row_min: int :: 10
+const my_col_min: int :: 2
+const your_row_min: int :: -6
+const your_col_min: int :: -1
+const row_size: int :: 5
+const col_size: int :: 8
+var grid: [][]int
+var pieces: []@CPiece
+var pieceTex: Draw@CTex
+var typeTex: Draw@CTex
 
-const grid_width :float :: 70.0
-const grid_height :float :: 80.0
-const width_offset :float :: 480.0
-const height_offset :float :: 90.0
-const my_row_min :int :: 10
-const my_row_max :int :: 15
-const my_col_min :int :: 2
-const my_col_max :int :: 10
-const your_row_min :int :: -6
-const your_row_max :int :: -1
-const your_col_min :int :: -1
-const your_col_max :int :: 7
-var grid :[][]int
-var pieces :[]Piece
-var pieceTex :D3D@CTex
-var typeTex :D3D@CTex
-
-func Init(cfg :Kuin@CCfg)
+func Init(cfg: Kuin@CCfg)
     do cfg.Title :: "Shogi"
-    do cfg.FullScr :: false
-    do cfg.PadNum :: 1
-    do cfg.WaitTime :: 60
 end func
 
 func Main()
-    var select_flag :bool :: true
-    do Shogi@pieceTex :: D3D@LoadTex("piece.png")
-    do Shogi@typeTex :: D3D@LoadTex("azukiP_Shogi.png")
+    var select_flag: bool :: true
+    do @pieceTex :: Draw@LoadTex("piece.kntex")
+    do @typeTex :: Draw@LoadTex("azukiP_Shogi.kntex")
 
-    do Shogi@grid :: @new [9][]int
+    do @grid :: #[9][]int
     for i(0, 8)
-        do Shogi@grid[i] :: @new [9]int
+        do @grid[i] :: #[9]int
     end for
 
     { Set pieces }
-    do Shogi@pieces :: @new [41]Shogi@Piece
-    do Shogi@pieces[0] :: (@new Shogi@Piece).Init(-100, -100, -1, false) {void}
+    do @pieces :: #[41]@CPiece
+    do @pieces[0] :: (#@CPiece).Init(-100, -100, -1, false) {void}
     for i(0, 1)
-        var isChallenger :bool :: i = 0 ?(false, true)
-        var y :int :: i = 0 ?(0, 8)
-        do Shogi@pieces[1 + i * 20] :: (@new Shogi@Piece).Init(0, y, 7, isChallenger)
-        do Shogi@pieces[2 + i * 20] :: (@new Shogi@Piece).Init(1, y, 6, isChallenger)
-        do Shogi@pieces[3 + i * 20] :: (@new Shogi@Piece).Init(2, y, 5, isChallenger)
-        do Shogi@pieces[4 + i * 20] :: (@new Shogi@Piece).Init(3, y, 4, isChallenger)
-        do Shogi@pieces[5 + i * 20] :: (@new Shogi@Piece).Init(4, y, i = 0 ?(0, 1), isChallenger)
-        do Shogi@pieces[6 + i * 20] :: (@new Shogi@Piece).Init(5, y, 4, isChallenger)
-        do Shogi@pieces[7 + i * 20] :: (@new Shogi@Piece).Init(6, y, 5, isChallenger)
-        do Shogi@pieces[8 + i * 20] :: (@new Shogi@Piece).Init(7, y, 6, isChallenger)
-        do Shogi@pieces[9 + i * 20] :: (@new Shogi@Piece).Init(8, y, 7, isChallenger)
+        var isChallenger: bool :: i = 0 ?(false, true)
+        var y: int :: i = 0 ?(0, 8)
+        do @pieces[1 + i * 20] :: (#@CPiece).Init(0, y, 7, isChallenger)
+        do @pieces[2 + i * 20] :: (#@CPiece).Init(1, y, 6, isChallenger)
+        do @pieces[3 + i * 20] :: (#@CPiece).Init(2, y, 5, isChallenger)
+        do @pieces[4 + i * 20] :: (#@CPiece).Init(3, y, 4, isChallenger)
+        do @pieces[5 + i * 20] :: (#@CPiece).Init(4, y, i = 0 ?(0, 1), isChallenger)
+        do @pieces[6 + i * 20] :: (#@CPiece).Init(5, y, 4, isChallenger)
+        do @pieces[7 + i * 20] :: (#@CPiece).Init(6, y, 5, isChallenger)
+        do @pieces[8 + i * 20] :: (#@CPiece).Init(7, y, 6, isChallenger)
+        do @pieces[9 + i * 20] :: (#@CPiece).Init(8, y, 7, isChallenger)
         for j(0, 8)
-            var y :int :: i = 0 ?(2, 6)
-            do Shogi@pieces[12 + j + i * 20] :: (@new Shogi@Piece).Init(j, y, 8, isChallenger)
+            var y: int :: i = 0 ?(2, 6)
+            do @pieces[12 + j + i * 20] :: (#@CPiece).Init(j, y, 8, isChallenger)
         end for
     end for
-    do Shogi@pieces[10] :: (@new Shogi@Piece).Init(1, 1, 2, false)
-    do Shogi@pieces[11] :: (@new Shogi@Piece).Init(7, 1, 3, false)
-    do Shogi@pieces[30] :: (@new Shogi@Piece).Init(7, 7, 2, true)
-    do Shogi@pieces[31] :: (@new Shogi@Piece).Init(1, 7, 3, true)
+    do @pieces[10] :: (#@CPiece).Init(1, 1, 2, false)
+    do @pieces[11] :: (#@CPiece).Init(7, 1, 3, false)
+    do @pieces[30] :: (#@CPiece).Init(7, 7, 2, true)
+    do @pieces[31] :: (#@CPiece).Init(1, 7, 3, true)
 
-    while (true)
+    while()
         do Kuin@Act()
-        var right_click :bool :: DI@MouseBtn(DI@EMouseBtn#Right) = 1
-        var left_click :bool :: DI@MouseBtn(DI@EMouseBtn#Left) = 1
-        if (right_click | left_click)
-            var mouse_x :float
-            var mouse_y :float
-            do DI@MousePos(&mouse_x, &mouse_y)
-            var mouse_row :int :: ((mouse_x - Shogi@width_offset) / Shogi@grid_width) $int - ((mouse_x - Shogi@width_offset < 0.0) ?(1, 0))
-            var mouse_col :int :: ((mouse_y - Shogi@height_offset) / Shogi@grid_height) $int - ((mouse_y - Shogi@height_offset < 0.0) ?(1, 0))
-            if (right_click)
+        var right_click: bool :: Input@Mouse(Input@EMouse#Right) = 1
+        var left_click: bool :: Input@Mouse(Input@EMouse#Left) = 1
+        if(right_click | left_click)
+            var mouse_x: float :: Input@MouseX()
+            var mouse_y: float :: Input@MouseY()
+            var mouse_row: int :: ((mouse_x - @width_offset) / @grid_width)$ int - ((mouse_x - @width_offset < 0.0) ?(1, 0))
+            var mouse_col: int :: ((mouse_y - @height_offset) / @grid_height)$ int - ((mouse_y - @height_offset < 0.0) ?(1, 0))
+            if(right_click)
                 { Reverse piece }
-                foreach p(Shogi@pieces)
-                    if (p.row = mouse_row & p.col = mouse_col)
+                foreach p(@pieces)
+                    if(p.row = mouse_row & p.col = mouse_col)
                         do p.Reverse()
                         break p
                     end if
                 end foreach
-            elif (select_flag)
+            elif(select_flag)
                 { Select piece }
-                for i(Shogi@pieces.Len() - 1, 0, -1)
-                    var p :Shogi@Piece :: Shogi@pieces[i]
-                    if (p.row = mouse_row & p.col = mouse_col)
+                for i(@pieces.Len() - 1, 0, -1)
+                    var p: @CPiece :: @pieces[i]
+                    if(p.row = mouse_row & p.col = mouse_col)
                         do p.Select()
                         do select_flag :: false
                         break i
@@ -95,19 +88,19 @@ func Main()
                 end for
             else
                 { Put selected piece }
-                for i(0, Shogi@pieces.Len() - 1)
-                    if (Shogi@pieces[i].isSelected)
-                        var p :Shogi@Piece :: Shogi@pieces[i]
-                        do Shogi@pieces[i].UnSelect()
-                        for j(i + 1, Shogi@pieces.Len() - 1)
-                            do Shogi@pieces[j - 1] :: Shogi@pieces[j]
+                for i(0, @pieces.Len() - 1)
+                    if(@pieces[i].isSelected)
+                        var p: @CPiece :: @pieces[i]
+                        do @pieces[i].UnSelect()
+                        for j(i + 1, @pieces.Len() - 1)
+                            do @pieces[j - 1] :: @pieces[j]
                         end for
-                        do Shogi@pieces[Shogi@pieces.Len() - 1] :: p
-                        do Shogi@pieces[Shogi@pieces.Len() - 1].Move(mouse_row, mouse_col)
-                        if (IsMyZone(mouse_row, mouse_col))
-                            do Shogi@pieces[Shogi@pieces.Len() - 1].isChallenger :: true
-                        elif (IsYourZone(mouse_row, mouse_col))
-                            do Shogi@pieces[Shogi@pieces.Len() - 1].isChallenger :: false
+                        do @pieces[@pieces.Len() - 1] :: p
+                        do @pieces[@pieces.Len() - 1].Move(mouse_row, mouse_col)
+                        if(IsMyZone(mouse_row, mouse_col))
+                            do @pieces[@pieces.Len() - 1].isChallenger :: true
+                        elif(IsYourZone(mouse_row, mouse_col))
+                            do @pieces[@pieces.Len() - 1].isChallenger :: false
                         end if
                         do select_flag :: true
                         break i
@@ -121,68 +114,69 @@ func Main()
     func DrawBoard()
         for row(0, 8)
             for col(0, 8)
-                var x0 :float :: row $float * Shogi@grid_width + Shogi@width_offset
-                var y0 :float :: col $float * Shogi@grid_height + Shogi@height_offset
-                var x1 :float :: x0 + Shogi@grid_width
-                var y1 :float :: y0 + Shogi@grid_height
-                do D3D@DrawRect(x0 + 1.0, y0 + 1.0, x1 - 1.0, y1 - 1.0, 1.0, 0.5, 0.0, 1.0)
+                var x0: float :: row$ float * @grid_width + @width_offset
+                var y0: float :: col$ float * @grid_height + @height_offset
+                var x1: float :: x0 + @grid_width
+                var y1: float :: y0 + @grid_height
+                do Draw@Rect(x0 + 1.0, y0 + 1.0, @grid_width - 2.0, @grid_height - 2.0, 1.0, 0.5, 0.0, 1.0)
             end for
         end for
         block
-            const x0 :float :: Shogi@my_row_min $float * Shogi@grid_width + Shogi@width_offset
-            const x1 :float :: Shogi@my_row_max $float * Shogi@grid_width + Shogi@width_offset
-            const y0 :float :: Shogi@my_col_min $float * Shogi@grid_height + Shogi@height_offset
-            const y1 :float :: Shogi@my_col_max $float * Shogi@grid_height + Shogi@height_offset
-            do D3D@DrawRect(x0, y0, x1, y1, 0.8, 0.5, 0.0, 1.0)
+            const x0: float :: @my_row_min$ float * @grid_width + @width_offset
+            const y0: float :: @my_col_min$ float * @grid_height + @height_offset
+            const width: float :: @row_size$ float * @grid_width
+            const height: float :: @col_size$ float * @grid_height
+            do Draw@Rect(x0, y0, width, height, 0.8, 0.5, 0.0, 1.0)
         end block
         block
-            const x0 :float :: Shogi@your_row_min $float * Shogi@grid_width + Shogi@width_offset
-            const x1 :float :: Shogi@your_row_max $float * Shogi@grid_width + Shogi@width_offset
-            const y0 :float :: Shogi@your_col_min $float * Shogi@grid_height + Shogi@height_offset
-            const y1 :float :: Shogi@your_col_max $float * Shogi@grid_height + Shogi@height_offset
-        do D3D@DrawRect(x0, y0, x1, y1, 0.8, 0.5, 0.0, 1.0)
+            const x0: float :: @your_row_min$ float * @grid_width + @width_offset
+            const y0: float :: @your_col_min$ float * @grid_height + @height_offset
+            const width: float :: @row_size$ float * @grid_width
+            const height: float :: @col_size$ float * @grid_height
+        do Draw@Rect(x0, y0, width, height, 0.8, 0.5, 0.0, 1.0)
         end block
 
-        foreach p(Shogi@pieces)
-            const font_width :float :: 64.0
-            const font_height :float :: 64.0
-            const piece_width :float :: 64.0
-            const piece_height :float :: 70.0
-            var sx :float :: p.type $float * font_width
-            var sy :float :: p.isReversed ?(font_width, 0.0)
-            var dx_ :float :: p.row $float * Shogi@grid_width + Shogi@width_offset + 3.0
-            var dy_ :float :: p.col $float * Shogi@grid_height + Shogi@height_offset + 5.0
-            var dx :float :: p.row $float * Shogi@grid_width + Shogi@width_offset + 3.0
-            var dy :float :: p.col $float * Shogi@grid_height + Shogi@height_offset + (p.isChallenger ?(10.0, 6.0))
-            const dw_ :float :: piece_width
-            const dh_ :float :: piece_height
-            const dw :float :: font_width
-            const dh :float :: font_height
-            var angle :float :: p.isChallenger ?(0.0, Math@Pi)
-            var r :float :: p.isReversed ?(1.0, 0.0)
-            var g :float :: p.isSelected ?(0.8, 1.0)
-            var b :float :: p.isSelected ?(0.8, 1.0)
-            do D3D@DrawTexRot(Shogi@pieceTex, 0.0, 0.0, piece_width, piece_height, dx_, dy_, dw_, dh_, angle, dw_ / 2.0, dh_ / 2.0, 1.0, g, b, 1.0)
-            do D3D@DrawTexRot(Shogi@typeTex, sx, sy, font_width, font_height, dx, dy, dw, dh, angle, dw / 2.0, dh / 2.0, r, 0.0, 0.0, 1.0)
+        foreach p(@pieces)
+            const font_width: float :: 64.0
+            const font_height: float :: 64.0
+            const piece_width: float :: 64.0
+            const piece_height: float :: 70.0
+            var sx: float :: p.type$ float * font_width
+            var sy: float :: p.isReversed ?(font_width, 0.0)
+            var dx_: float :: p.row$ float * @grid_width + @width_offset + 3.0
+            var dy_: float :: p.col$ float * @grid_height + @height_offset + 5.0
+            var dx: float :: p.row$ float * @grid_width + @width_offset + 3.0
+            var dy: float :: p.col$ float * @grid_height + @height_offset + (p.isChallenger ?(10.0, 6.0))
+            const dw_: float :: piece_width
+            const dh_: float :: piece_height
+            const dw: float :: font_width
+            const dh: float :: font_height
+            var angle: float :: p.isChallenger ?(0.0, Lib@Pi)
+            var r: float :: p.isReversed ?(1.0, 0.0)
+            var g: float :: p.isSelected ?(0.8, 1.0)
+            var b: float :: p.isSelected ?(0.8, 1.0)
+
+            do @pieceTex.DrawRot(0.0, 0.0, piece_width, piece_height, dx_, dy_, dw_, dh_, dw_ / 2.0, dh_ / 2.0, angle, 1.0, g, b, 1.0)
+            do @typeTex.DrawRot(sx, sy, font_width, font_height, dx, dy, dw, dh, dw / 2.0, dh / 2.0, angle, r, 0.0, 0.0, 1.0)
         end foreach
     end func
 
-    func IsMyZone(row :int, col :int) :bool
-        return (row >= Shogi@my_row_min & row < Shogi@my_row_max & col >= Shogi@my_col_min & col < Shogi@my_col_max)
+    func IsMyZone(row: int, col: int): bool
+        return (row >= @my_row_min & row < @my_row_min + @row_size & col >= @my_col_min & col < @my_col_min + @col_size)
     end func
-    func IsYourZone(row :int, col :int) :bool
-        return (row >= Shogi@your_row_min & row < Shogi@your_row_max & col >= Shogi@your_col_min & col < Shogi@your_col_max)
+    func IsYourZone(row: int, col: int): bool
+        return (row >= @your_row_min & row < @your_row_min + @row_size & col >= @your_col_min & col < @your_col_min + @col_size)
     end func
 end func
 
-class Piece()
-    var row :int
-    var col :int
-    var type :int
-    var isChallenger :bool
-    var isReversed :bool
-    var isSelected :bool
-    func Init(row :int, col :int, type :int, isChallenger :bool) :Piece
+class CPiece()
+    var row: int
+    var col: int
+    var type: int
+    var isChallenger: bool
+    var isReversed: bool
+    var isSelected: bool
+    func Init(row: int, col: int, type: int, isChallenger: bool): @CPiece
         do this.row :: row
         do this.col :: col
         do this.type :: type
@@ -198,9 +192,8 @@ class Piece()
     func UnSelect()
         do this.isSelected :: false
     end func
-    func Move(row :int, col :int)
+    func Move(row: int, col: int)
         do this.row :: row
         do this.col :: col
     end func
 end class
-
