@@ -1,33 +1,59 @@
 {
-	Shogi.kn v1.00 (for Kuin 1.01):
-		Last Modified: 2014/02/16 01:12:49.
-		Created by @tatt61880
-			https://twitter.com/tatt61880
-			https://github.com/tatt61880
+shogi.kn
+Last Modified: 2018/06/11 05:17:02.
+Created by @tatt61880
+https://twitter.com/tatt61880
+https://github.com/tatt61880
 }
-const grid_width: float :: 70.0
-const grid_height: float :: 80.0
-const width_offset: float :: 480.0
-const height_offset: float :: 90.0
-const my_row_min: int :: 10
+const gridWidth: int :: 70
+const gridHeight: int :: 80
+const widthOffset: int :: 480
+const heightOffset: int :: 90
+const myRowMin: int :: 10
 const my_col_min: int :: 2
 const your_row_min: int :: -6
 const your_col_min: int :: -1
 const row_size: int :: 5
 const col_size: int :: 8
 var grid: [][]int
-var pieces: []@CPiece
-var pieceTex: Draw@CTex
-var typeTex: Draw@CTex
+var pieces: []@Piece
+var pieceTex: draw@Tex
+var typeTex: draw@Tex
 
-func Init(cfg: Kuin@CCfg)
-	do cfg.Title :: "Shogi"
-end func
+const titleStr: []char :: "Shogi"
+var wndMain: wnd@Wnd
+var drawMain: wnd@Draw
+const wndWidth: int :: 1600
+const wndHeight: int :: 900
 
-func Main()
-	var select_flag: bool :: true
-	do @pieceTex :: Draw@LoadTex("piece.kntex")
-	do @typeTex :: Draw@LoadTex("azukiP_Shogi.kntex")
+var rightClick: bool
+var leftClick: bool
+var mouseX: int
+var mouseY: int
+
+func main()
+	do @wndMain :: wnd@makeWnd(null, %aspect, @wndWidth, @wndHeight, @titleStr)
+	do @drawMain :: wnd@makeDraw(@wndMain, 0, 0, @wndWidth, @wndHeight, %scale, %scale, false)
+	do @drawMain.onMouseDownL :: onMouseDownL
+	do @drawMain.onMouseDownR :: onMouseDownR
+	do @drawMain.onMouseMove :: onMouseMove
+	func onMouseDownL(wnd: wnd@Draw, x: int, y: int)
+		do @leftClick :: true
+	end func
+	func onMouseDownR(wnd: wnd@Draw, x: int, y: int)
+		do @rightClick :: true
+	end func
+	func onMouseMove(wnd: wnd@Draw, x: int, y: int)
+		var width: int
+		var height: int
+		do wnd.getPos(&, &, &width, &height)
+		do @mouseX :: x * @wndWidth / width
+		do @mouseY :: y * @wndHeight / height
+	end func
+
+	var selectFlag: bool :: true
+	do @pieceTex :: draw@makeTex("res/piece.png")
+	do @typeTex :: draw@makeTex("res/azukiP_Shogi.png")
 
 	do @grid :: #[9][]int
 	for i(0, 8)
@@ -35,164 +61,171 @@ func Main()
 	end for
 
 	{ Set pieces }
-	do @pieces :: #[41]@CPiece
-	do @pieces[0] :: (#@CPiece).Init(-100, -100, -1, false) {void}
+	do @pieces :: #[41]@Piece
+	do @pieces[0] :: (#@Piece).init(-100, -100, -1, false) {void}
 	for i(0, 1)
 		var isChallenger: bool :: i = 0 ?(false, true)
 		var y: int :: i = 0 ?(0, 8)
-		do @pieces[1 + i * 20] :: (#@CPiece).Init(0, y, 7, isChallenger)
-		do @pieces[2 + i * 20] :: (#@CPiece).Init(1, y, 6, isChallenger)
-		do @pieces[3 + i * 20] :: (#@CPiece).Init(2, y, 5, isChallenger)
-		do @pieces[4 + i * 20] :: (#@CPiece).Init(3, y, 4, isChallenger)
-		do @pieces[5 + i * 20] :: (#@CPiece).Init(4, y, i = 0 ?(0, 1), isChallenger)
-		do @pieces[6 + i * 20] :: (#@CPiece).Init(5, y, 4, isChallenger)
-		do @pieces[7 + i * 20] :: (#@CPiece).Init(6, y, 5, isChallenger)
-		do @pieces[8 + i * 20] :: (#@CPiece).Init(7, y, 6, isChallenger)
-		do @pieces[9 + i * 20] :: (#@CPiece).Init(8, y, 7, isChallenger)
+		do @pieces[1 + i * 20] :: (#@Piece).init(0, y, 7, isChallenger)
+		do @pieces[2 + i * 20] :: (#@Piece).init(1, y, 6, isChallenger)
+		do @pieces[3 + i * 20] :: (#@Piece).init(2, y, 5, isChallenger)
+		do @pieces[4 + i * 20] :: (#@Piece).init(3, y, 4, isChallenger)
+		do @pieces[5 + i * 20] :: (#@Piece).init(4, y, i = 0 ?(0, 1), isChallenger)
+		do @pieces[6 + i * 20] :: (#@Piece).init(5, y, 4, isChallenger)
+		do @pieces[7 + i * 20] :: (#@Piece).init(6, y, 5, isChallenger)
+		do @pieces[8 + i * 20] :: (#@Piece).init(7, y, 6, isChallenger)
+		do @pieces[9 + i * 20] :: (#@Piece).init(8, y, 7, isChallenger)
 		for j(0, 8)
-			var y: int :: i = 0 ?(2, 6)
-			do @pieces[12 + j + i * 20] :: (#@CPiece).Init(j, y, 8, isChallenger)
+			do y :: i = 0 ?(2, 6)
+			do @pieces[12 + j + i * 20] :: (#@Piece).init(j, y, 8, isChallenger)
 		end for
 	end for
-	do @pieces[10] :: (#@CPiece).Init(1, 1, 2, false)
-	do @pieces[11] :: (#@CPiece).Init(7, 1, 3, false)
-	do @pieces[30] :: (#@CPiece).Init(7, 7, 2, true)
-	do @pieces[31] :: (#@CPiece).Init(1, 7, 3, true)
+	do @pieces[10] :: (#@Piece).init(1, 1, 2, false)
+	do @pieces[11] :: (#@Piece).init(7, 1, 3, false)
+	do @pieces[30] :: (#@Piece).init(7, 7, 2, true)
+	do @pieces[31] :: (#@Piece).init(1, 7, 3, true)
 
-	while()
-		do Kuin@Act()
-		var right_click: bool :: Input@Mouse(Input@EMouse#Right) = 1
-		var left_click: bool :: Input@Mouse(Input@EMouse#Left) = 1
-		if(right_click | left_click)
-			var mouse_x: float :: Input@MouseX()
-			var mouse_y: float :: Input@MouseY()
-			var mouse_row: int :: ((mouse_x - @width_offset) / @grid_width) $ int - ((mouse_x - @width_offset < 0.0) ?(1, 0))
-			var mouse_col: int :: ((mouse_y - @height_offset) / @grid_height) $ int - ((mouse_y - @height_offset < 0.0) ?(1, 0))
-			if(right_click)
+	while(wnd@act())
+		if(@rightClick | @leftClick)
+			do @leftClick :: false
+			var mouseRow: int :: (@mouseX - @widthOffset) / @gridWidth
+			var mouseCol: int :: (@mouseY - @heightOffset) / @gridHeight
+			if(@rightClick)
+				do @rightClick :: false
 				{ Reverse piece }
-				foreach p(@pieces)
-					if(p.row = mouse_row & p.col = mouse_col)
-						do p.Reverse()
-						break p
+				for i(0, ^@pieces - 1)
+					var p: @Piece :: @pieces[i]
+					if(p.row = mouseRow & p.col = mouseCol)
+						do p.reverse()
+						break i
 					end if
-				end foreach
-			elif(select_flag)
+				end for
+			elif(selectFlag)
 				{ Select piece }
-				for i(@pieces.Len() - 1, 0, -1)
-					var p: @CPiece :: @pieces[i]
-					if(p.row = mouse_row & p.col = mouse_col)
-						do p.Select()
-						do select_flag :: false
+				for i(^@pieces - 1, 0, -1)
+					var p: @Piece :: @pieces[i]
+					if(p.row = mouseRow & p.col = mouseCol)
+						do p.select()
+						do selectFlag :: false
 						break i
 					end if
 				end for
 			else
 				{ Put selected piece }
-				for i(0, @pieces.Len() - 1)
-					if(@pieces[i].isSelected)
-						var p: @CPiece :: @pieces[i]
-						do @pieces[i].UnSelect()
-						for j(i + 1, @pieces.Len() - 1)
+				for i(0, ^@pieces - 1)
+					if(@pieces[i].isSelected())
+						var p: @Piece :: @pieces[i]
+						do @pieces[i].unselect()
+						for j(i + 1, ^@pieces - 1)
 							do @pieces[j - 1] :: @pieces[j]
 						end for
-						do @pieces[@pieces.Len() - 1] :: p
-						do @pieces[@pieces.Len() - 1].Move(mouse_row, mouse_col)
-						if(IsMyZone(mouse_row, mouse_col))
-							do @pieces[@pieces.Len() - 1].isChallenger :: true
-						elif(IsYourZone(mouse_row, mouse_col))
-							do @pieces[@pieces.Len() - 1].isChallenger :: false
+						do @pieces[^@pieces - 1] :: p
+						do @pieces[^@pieces - 1].move(mouseRow, mouseCol)
+						if(isMyZone(mouseRow, mouseCol))
+							do @pieces[^@pieces - 1].isChallenger :: true
+						elif(isYourZone(mouseRow, mouseCol))
+							do @pieces[^@pieces - 1].isChallenger :: false
 						end if
-						do select_flag :: true
+						do selectFlag :: true
 						break i
 					end if
 				end for
 			end if
 		end if
-		do DrawBoard()
+		do drawBoard()
+		do draw@render(60)
 	end while
 
-	func DrawBoard()
+	func drawBoard()
 		for row(0, 8)
 			for col(0, 8)
-				var x0: float :: row $ float * @grid_width + @width_offset
-				var y0: float :: col $ float * @grid_height + @height_offset
-				var x1: float :: x0 + @grid_width
-				var y1: float :: y0 + @grid_height
-				do Draw@Rect(x0 + 1.0, y0 + 1.0, @grid_width - 2.0, @grid_height - 2.0, 1.0, 0.5, 0.0, 1.0)
+				var x0: float :: (row * @gridWidth + @widthOffset) $ float
+				var y0: float :: (col * @gridHeight + @heightOffset) $ float
+				var x1: float :: x0 + @gridWidth $ float
+				var y1: float :: y0 + @gridHeight $ float
+				do draw@rect(x0 + 1.0, y0 + 1.0, @gridWidth $ float - 2.0, @gridHeight $ float - 2.0, 16#FFFF8000)
 			end for
 		end for
 		block
-			const x0: float :: @my_row_min $ float * @grid_width + @width_offset
-			const y0: float :: @my_col_min $ float * @grid_height + @height_offset
-			const width: float :: @row_size $ float * @grid_width
-			const height: float :: @col_size $ float * @grid_height
-			do Draw@Rect(x0, y0, width, height, 0.8, 0.5, 0.0, 1.0)
+			const x0: float :: (@myRowMin * @gridWidth + @widthOffset) $ float
+			const y0: float :: (@my_col_min  * @gridHeight + @heightOffset) $ float
+			const width: float :: (@row_size * @gridWidth) $ float
+			const height: float :: (@col_size * @gridHeight) $ float
+			do draw@rect(x0, y0, width, height, 16#FFD08000)
 		end block
 		block
-			const x0: float :: @your_row_min $ float * @grid_width + @width_offset
-			const y0: float :: @your_col_min $ float * @grid_height + @height_offset
-			const width: float :: @row_size $ float * @grid_width
-			const height: float :: @col_size $ float * @grid_height
-		do Draw@Rect(x0, y0, width, height, 0.8, 0.5, 0.0, 1.0)
+			const x0: float :: (@your_row_min * @gridWidth + @widthOffset) $ float
+			const y0: float :: (@your_col_min * @gridHeight + @heightOffset) $ float
+			const width: float :: (@row_size * @gridWidth) $ float
+			const height: float :: (@col_size * @gridHeight) $ float
+			do draw@rect(x0, y0, width, height, 16#FFD08000)
 		end block
 
-		foreach p(@pieces)
-			const font_width: float :: 64.0
-			const font_height: float :: 64.0
-			const piece_width: float :: 64.0
-			const piece_height: float :: 70.0
-			var sx: float :: p.type $ float * font_width
-			var sy: float :: p.isReversed ?(font_width, 0.0)
-			var dx_: float :: p.row $ float * @grid_width + @width_offset + 3.0
-			var dy_: float :: p.col $ float * @grid_height + @height_offset + 5.0
-			var dx: float :: p.row $ float * @grid_width + @width_offset + 3.0
-			var dy: float :: p.col $ float * @grid_height + @height_offset + (p.isChallenger ?(10.0, 6.0))
-			const dw_: float :: piece_width
-			const dh_: float :: piece_height
-			const dw: float :: font_width
-			const dh: float :: font_height
-			var angle: float :: p.isChallenger ?(0.0, Lib@Pi)
-			var r: float :: p.isReversed ?(1.0, 0.0)
-			var g: float :: p.isSelected ?(0.8, 1.0)
-			var b: float :: p.isSelected ?(0.8, 1.0)
+		for i(0, ^@pieces - 1)
+			var p: @Piece :: @pieces[i]
+			const fontWidth: float :: 64.0
+			const fontHeight: float :: 64.0
+			const pieceWidth: float :: 64.0
+			const pieceHeight: float :: 70.0
+			var sx: float :: p.type $ float * fontWidth
+			var sy: float :: p.isReversed() ?(fontWidth, 0.0)
+			var dx_: float :: (p.row * @gridWidth + @widthOffset) $ float + 3.0
+			var dy_: float :: (p.col * @gridHeight + @heightOffset) $ float + 5.0
+			var dx: float :: (p.row * @gridWidth + @widthOffset) $ float + 3.0
+			var dy: float :: (p.col * @gridHeight + @heightOffset) $ float + (p.isChallenger ?(10.0, 6.0))
+			const dw_: float :: pieceWidth
+			const dh_: float :: pieceHeight
+			const dw: float :: fontWidth
+			const dh: float :: fontHeight
+			var angle: float :: p.isChallenger ?(0.0, lib@pi)
+			var r: int :: p.isReversed() ?(16#FF, 16#00)
+			var g: int :: p.isSelected() ?(16#D0, 16#FF)
+			var b: int :: p.isSelected() ?(16#D0, 16#FF)
 
-			do @pieceTex.DrawRot(0.0, 0.0, piece_width, piece_height, dx_, dy_, dw_, dh_, dw_ / 2.0, dh_ / 2.0, angle, 1.0, g, b, 1.0)
-			do @typeTex.DrawRot(sx, sy, font_width, font_height, dx, dy, dw, dh, dw / 2.0, dh / 2.0, angle, r, 0.0, 0.0, 1.0)
-		end foreach
+			do @pieceTex.drawRot(dx_, dy_, dw_, dh_, 0.0, 0.0, pieceWidth, pieceHeight, dw_ / 2.0, dh_ / 2.0, angle, 16#FFFF0000 + g * 16#100 + b * 16#01)
+			do @typeTex.drawRot(dx, dy, dw, dh, sx, sy, fontWidth, fontHeight, dw / 2.0, dh / 2.0, angle, 16#FF000000 + r * 16#10000)
+		end for
 	end func
 
-	func IsMyZone(row: int, col: int): bool
-		return (row >= @my_row_min & row < @my_row_min + @row_size & col >= @my_col_min & col < @my_col_min + @col_size)
+	func isMyZone(row: int, col: int): bool
+		ret (row >= @myRowMin & row < @myRowMin + @row_size & col >= @my_col_min & col < @my_col_min + @col_size)
 	end func
-	func IsYourZone(row: int, col: int): bool
-		return (row >= @your_row_min & row < @your_row_min + @row_size & col >= @your_col_min & col < @your_col_min + @col_size)
+
+	func isYourZone(row: int, col: int): bool
+		ret (row >= @your_row_min & row < @your_row_min + @row_size & col >= @your_col_min & col < @your_col_min + @col_size)
 	end func
 end func
 
-class CPiece()
-	var row: int
-	var col: int
-	var type: int
-	var isChallenger: bool
-	var isReversed: bool
-	var isSelected: bool
-	func Init(row: int, col: int, type: int, isChallenger: bool): @CPiece
+class Piece()
+	+var row: int
+	+var col: int
+	+var type: int
+	+var isChallenger: bool
+	var reversed: bool
+	var selected: bool
+	+func init(row: int, col: int, type: int, isChallenger: bool): @Piece
 		do me.row :: row
 		do me.col :: col
 		do me.type :: type
 		do me.isChallenger :: isChallenger
-		return me
+		ret me
 	end func
-	func Reverse()
-		do me.isReversed :: !me.isReversed
+	+func reverse()
+		do me.reversed :: !me.reversed
 	end func
-	func Select()
-		do me.isSelected :: true
+	+func isReversed(): bool
+		ret me.reversed
 	end func
-	func UnSelect()
-		do me.isSelected :: false
+	+func select()
+		do me.selected :: true
 	end func
-	func Move(row: int, col: int)
+	+func unselect()
+		do me.selected :: false
+	end func
+	+func isSelected(): bool
+		ret me.selected
+	end func
+	+func move(row: int, col: int)
 		do me.row :: row
 		do me.col :: col
 	end func
