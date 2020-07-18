@@ -1,6 +1,5 @@
 {
 shogi.kn
-Last Modified: 2018/06/11 05:17:02.
 Created by @tatt61880
 https://twitter.com/tatt61880
 https://github.com/tatt61880
@@ -37,29 +36,29 @@ func main()
 	do @drawMain.onMouseDownL :: onMouseDownL
 	do @drawMain.onMouseDownR :: onMouseDownR
 	do @drawMain.onMouseMove :: onMouseMove
-	func onMouseDownL(wnd: wnd@Draw, x: int, y: int)
+	func onMouseDownL(wnd: wnd@WndBase, x: int, y: int)
 		do @leftClick :: true
 	end func
-	func onMouseDownR(wnd: wnd@Draw, x: int, y: int)
+	func onMouseDownR(wnd: wnd@WndBase, x: int, y: int)
 		do @rightClick :: true
 	end func
-	func onMouseMove(wnd: wnd@Draw, x: int, y: int)
+	func onMouseMove(wnd: wnd@WndBase, x: int, y: int)
 		var width: int
 		var height: int
 		do wnd.getPos(&, &, &width, &height)
 		do @mouseX :: x * @wndWidth / width
 		do @mouseY :: y * @wndHeight / height
 	end func
-
+	
 	var selectFlag: bool :: true
 	do @pieceTex :: draw@makeTex("res/piece.png")
 	do @typeTex :: draw@makeTex("res/azukiP_Shogi.png")
-
+	
 	do @grid :: #[9][]int
 	for i(0, 8)
 		do @grid[i] :: #[9]int
 	end for
-
+	
 	{ Set pieces }
 	do @pieces :: #[41]@Piece
 	do @pieces[0] :: (#@Piece).init(-100, -100, -1, false) {void}
@@ -84,7 +83,7 @@ func main()
 	do @pieces[11] :: (#@Piece).init(7, 1, 3, false)
 	do @pieces[30] :: (#@Piece).init(7, 7, 2, true)
 	do @pieces[31] :: (#@Piece).init(1, 7, 3, true)
-
+	
 	while(wnd@act())
 		if(@rightClick | @leftClick)
 			do @leftClick :: false
@@ -135,7 +134,7 @@ func main()
 		do drawBoard()
 		do draw@render(60)
 	end while
-
+	
 	func drawBoard()
 		for row(0, 8)
 			for col(0, 8)
@@ -143,24 +142,24 @@ func main()
 				var y0: float :: (col * @gridHeight + @heightOffset) $ float
 				var x1: float :: x0 + @gridWidth $ float
 				var y1: float :: y0 + @gridHeight $ float
-				do draw@rect(x0 + 1.0, y0 + 1.0, @gridWidth $ float - 2.0, @gridHeight $ float - 2.0, 16#FFFF8000)
+				do draw@rect(x0 + 1.0, y0 + 1.0, @gridWidth $ float - 2.0, @gridHeight $ float - 2.0, 0xFFFF8000)
 			end for
 		end for
 		block
 			const x0: float :: (@myRowMin * @gridWidth + @widthOffset) $ float
-			const y0: float :: (@my_col_min  * @gridHeight + @heightOffset) $ float
+			const y0: float :: (@my_col_min * @gridHeight + @heightOffset) $ float
 			const width: float :: (@row_size * @gridWidth) $ float
 			const height: float :: (@col_size * @gridHeight) $ float
-			do draw@rect(x0, y0, width, height, 16#FFD08000)
+			do draw@rect(x0, y0, width, height, 0xFFD08000)
 		end block
 		block
 			const x0: float :: (@your_row_min * @gridWidth + @widthOffset) $ float
 			const y0: float :: (@your_col_min * @gridHeight + @heightOffset) $ float
 			const width: float :: (@row_size * @gridWidth) $ float
 			const height: float :: (@col_size * @gridHeight) $ float
-			do draw@rect(x0, y0, width, height, 16#FFD08000)
+			do draw@rect(x0, y0, width, height, 0xFFD08000)
 		end block
-
+		
 		for i(0, ^@pieces - 1)
 			var p: @Piece :: @pieces[i]
 			const fontWidth: float :: 64.0
@@ -178,21 +177,21 @@ func main()
 			const dw: float :: fontWidth
 			const dh: float :: fontHeight
 			var angle: float :: p.isChallenger ?(0.0, lib@pi)
-			var r: int :: p.isReversed() ?(16#FF, 16#00)
-			var g: int :: p.isSelected() ?(16#D0, 16#FF)
-			var b: int :: p.isSelected() ?(16#D0, 16#FF)
-
-			do @pieceTex.drawRot(dx_, dy_, dw_, dh_, 0.0, 0.0, pieceWidth, pieceHeight, dw_ / 2.0, dh_ / 2.0, angle, 16#FFFF0000 + g * 16#100 + b * 16#01)
-			do @typeTex.drawRot(dx, dy, dw, dh, sx, sy, fontWidth, fontHeight, dw / 2.0, dh / 2.0, angle, 16#FF000000 + r * 16#10000)
+			var r: int :: p.isReversed() ?(0xFF, 0x00)
+			var g: int :: p.isSelected() ?(0xD0, 0xFF)
+			var b: int :: p.isSelected() ?(0xD0, 0xFF)
+			
+			do @pieceTex.drawRot(dx_, dy_, dw_, dh_, 0.0, 0.0, pieceWidth, pieceHeight, dw_ / 2.0, dh_ / 2.0, angle, 0xFFFF0000 + g * 0x100 + b * 0x01)
+			do @typeTex.drawRot(dx, dy, dw, dh, sx, sy, fontWidth, fontHeight, dw / 2.0, dh / 2.0, angle, 0xFF000000 + r * 0x10000)
 		end for
 	end func
-
+	
 	func isMyZone(row: int, col: int): bool
-		ret (row >= @myRowMin & row < @myRowMin + @row_size & col >= @my_col_min & col < @my_col_min + @col_size)
+		ret(row >= @myRowMin & row < @myRowMin + @row_size & col >= @my_col_min & col < @my_col_min + @col_size)
 	end func
-
+	
 	func isYourZone(row: int, col: int): bool
-		ret (row >= @your_row_min & row < @your_row_min + @row_size & col >= @your_col_min & col < @your_col_min + @col_size)
+		ret(row >= @your_row_min & row < @your_row_min + @row_size & col >= @your_col_min & col < @your_col_min + @col_size)
 	end func
 end func
 
